@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LOVE YOU MARIOMA <3 </title>
+  <title>Flower Love Collector</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -19,7 +17,6 @@
       width: 100%;
       height: 500px;
       border-bottom: 15px solid rgb(0, 110, 24);
-      margin: 0 auto;
       position: relative;
       overflow: hidden;
       background: linear-gradient(#87ceeb, #e0f6ff);
@@ -36,7 +33,6 @@
       width: 250px;
       position: absolute;
       bottom: 0;
-      transition: 0.1s;
     }
 
     .jump {
@@ -65,7 +61,6 @@
       position: absolute;
       width: 40px;
       animation: flower-animation 5s infinite linear;
-      z-index: 1;
     }
 
     .score {
@@ -75,7 +70,6 @@
       font-size: 24px;
       color: white;
       text-shadow: 2px 2px 2px black;
-      z-index: 999;
     }
 
     .boy-character {
@@ -84,12 +78,6 @@
       right: -150px;
       bottom: 0;
       animation: boy-entering 3s forwards;
-    }
-
-    .falling-flowers {
-      position: absolute;
-      width: 30px;
-      animation: falling 3s linear;
     }
 
     @keyframes pipe-animation {
@@ -129,17 +117,16 @@
   <div class="game-board">
     <div class="score">Flowers: <span id="flower-count">0</span>/9</div>
     <img src="images/clouds.png" class="clouds" alt="Clouds">
-    <img src="images/girl.gif" class="mario" alt="Girl Character">
+    <img src="images/girl.gif" class="mario" alt="Girl">
     <img src="images/pipe.png" class="pipe" alt="Pipe">
     <span class="game_over"></span>
   </div>
 
-  <!-- Audio Elements -->
-  <audio id="bg-music" loop src="sounds/bg.mp3"></audio>
+  <audio id="bg-music" loop src="sounds/bg-music.mp3"></audio>
   <audio id="jump-sound" src="sounds/jump.mp3"></audio>
   <audio id="game-over-sound" src="sounds/game-over.mp3"></audio>
   <audio id="collect-sound" src="sounds/collect.mp3"></audio>
-  <audio id="win-sound" src="sounds/love.mp3"></audio>
+  <audio id="win-sound" src="sounds/win.mp3"></audio>
 
   <script>
     const mario = document.querySelector('.mario');
@@ -150,123 +137,91 @@
     let gameActive = true;
     const scoreElement = document.getElementById('flower-count');
 
-    // Initialize background music
+    // الصوتيات
     const bgMusic = document.getElementById('bg-music');
     bgMusic.volume = 0.3;
     bgMusic.play();
 
-    // Jump function
+    // القفز
     const jump = () => {
       if (!gameActive) return;
-      
       mario.classList.add('jump');
       document.getElementById('jump-sound').play();
-      
-      setTimeout(() => {
-        mario.classList.remove('jump');
-      }, 700);
+      setTimeout(() => mario.classList.remove('jump'), 700);
     }
 
-    // Create flowers
+    // إنشاء الزهور
     const createFlower = () => {
       if (!gameActive) return;
-      
       const flower = document.createElement('img');
       flower.src = 'images/flower.png';
       flower.classList.add('flower');
       flower.style.bottom = `${Math.random() * 100 + 50}px`;
-      
       document.querySelector('.game-board').appendChild(flower);
-      
-      flower.addEventListener('animationend', () => {
-        flower.remove();
-      });
+      flower.addEventListener('animationend', () => flower.remove());
     }
 
-    // Check flower collision
+    // جمع الزهور
     const checkFlowerCollision = () => {
       document.querySelectorAll('.flower').forEach(flower => {
         const flowerPos = flower.getBoundingClientRect();
         const marioPos = mario.getBoundingClientRect();
-
-        if (
-          flowerPos.left < marioPos.right &&
-          flowerPos.right > marioPos.left &&
-          flowerPos.top < marioPos.bottom &&
-          flowerPos.bottom > marioPos.top
-        ) {
+        if (flowerPos.left < marioPos.right && 
+            flowerPos.right > marioPos.left && 
+            flowerPos.top < marioPos.bottom && 
+            flowerPos.bottom > marioPos.top) {
           flower.remove();
           flowerCount++;
           scoreElement.textContent = flowerCount;
           document.getElementById('collect-sound').play();
-          
-          if (flowerCount >= 9) {
-            triggerWinScenario();
-          }
+          if (flowerCount >= 9) triggerWinScenario();
         }
       });
     }
 
-    // Win scenario
+    // الفوز
     const triggerWinScenario = () => {
       gameActive = false;
       document.getElementById('win-sound').play();
       bgMusic.pause();
-
-      // Add boy character
       const boy = document.createElement('img');
-      boy.src = 'images/boy2.gif';
+      boy.src = 'images/boy.gif';
       boy.classList.add('boy-character');
       document.querySelector('.game-board').appendChild(boy);
-
-      // Create falling flowers
       setTimeout(() => {
         for (let i = 0; i < 50; i++) {
           const f = document.createElement('img');
           f.src = 'images/flower.png';
-          f.classList.add('falling-flowers');
           f.style.left = `${Math.random() * 100}%`;
+          f.style.animation = 'falling 3s linear';
           document.querySelector('.game-board').appendChild(f);
         }
-        
         gameOver.textContent = "I LOVE YOU MARIOMA";
         gameOver.style.color = "#ff69b4";
       }, 3000);
     }
 
-    // Game loop
+    // اللعبة
     const loop = setInterval(() => {
       if (!gameActive) return;
-
       const pipePosition = pipe.offsetLeft;
       const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
-      const cloudsPosition = +window.getComputedStyle(clouds).left.replace('px', '');
-
+      
       if (pipePosition <= 120 && pipePosition > 0 && marioPosition < 80) {
         gameActive = false;
-        
         pipe.style.animation = 'none';
         pipe.style.left = `${pipePosition}px`;
-
         mario.style.animation = 'none';
         mario.style.bottom = `${marioPosition}px`;
-
-        clouds.style.animation = 'none';
-        clouds.style.left = `${cloudsPosition}px`;
-
         mario.src = "images/girl_dead.gif";
         mario.style.width = '75px';
-        mario.style.marginLeft = '50px';
-
         gameOver.textContent = "GAME OVER";
-        document.getElementById('hit').play();
+        document.getElementById('game-over-sound').play();
         bgMusic.pause();
-
         clearInterval(loop);
       }
     }, 10)
 
-    // Event listeners
     document.addEventListener('keydown', jump);
     setInterval(createFlower, 3000);
     setInterval(checkFlowerCollision, 100);
